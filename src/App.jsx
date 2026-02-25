@@ -50,25 +50,21 @@ var labels = { 12: ‘Mes’, 4: ‘Trim’, 2: ‘Sem’, 1: ‘Ano’ };
 return (labels[m] || ‘Per’) + ’ ’ + i;
 }
 
-function getFormulaContent(s) {
-if (s === ‘A’) {
-return (
+function FormulaCard({ serie }) {
+if (serie === ‘A’) return (
 <div>
 <div className="formula-title">Formula Oficial - Serie A - IPC + Margen</div>
 <div className="formula-box">
 <div className="f-step"><span className="f-step-badge">PASO 1</span> Tasa Efectiva Anual compuesta</div>
 <div className="f-main">
-<span className="fh">TEA</span>
-<span className="fo"> = </span>
+<span className="fh">TEA</span><span className="fo"> = </span>
 <span>(1 + <span className="fb">IPC</span>) x (1 + <span className="fg">M</span>) - 1</span>
 </div>
-<div className="f-step"><span className="f-step-badge">PASO 2</span> Precio de Suscripcion</div>
+<div className="f-step"><span className="f-step-badge">PASO 2</span> Precio de Suscripcion (VP)</div>
 <div className="f-main">
-<span className="fh">P</span>
-<span className="fo"> = </span>
+<span className="fh">P</span><span className="fo"> = </span>
 <span className="fσ">Σ</span>
-<span className="fb"> Fi </span>
-<span className="fo"> / </span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
 <span>(1 + <span className="fh">r</span>)<sup className="fg">ti</sup></span>
 </div>
 <div className="f-legend">
@@ -83,25 +79,20 @@ return (
 </div>
 </div>
 );
-}
-if (s === ‘B’) {
-return (
+if (serie === ‘B’) return (
 <div>
 <div className="formula-title">Formula Oficial - Serie B - Tasa Fija</div>
 <div className="formula-box">
 <div className="f-step"><span className="f-step-badge">PASO 1</span> Conversion E.A. a Tasa Nominal</div>
 <div className="f-main">
-<span className="fh">inom</span>
-<span className="fo"> = </span>
+<span className="fh">inom</span><span className="fo"> = </span>
 <span>m x [(1 + <span className="fb">TEA</span>)<sup>1/m</sup> - 1]</span>
 </div>
 <div className="f-step"><span className="f-step-badge">PASO 2</span> Precio de Suscripcion</div>
 <div className="f-main">
-<span className="fh">P</span>
-<span className="fo"> = </span>
+<span className="fh">P</span><span className="fo"> = </span>
 <span className="fσ">Σ</span>
-<span className="fb"> Fi </span>
-<span className="fo"> / </span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
 <span>(1 + <span className="fh">r</span>)<sup className="fg">ti</sup></span>
 </div>
 <div className="f-legend">
@@ -113,33 +104,25 @@ return (
 </div>
 </div>
 );
-}
-if (s === ‘C’) {
-return (
+if (serie === ‘C’) return (
 <div>
 <div className="formula-title">Formula Oficial - Serie C - IBR + Margen</div>
 <div className="formula-box">
 <div className="f-step"><span className="f-step-badge">PASO 1</span> Tasa Nominal Total</div>
 <div className="f-main">
-<span className="fh">inom</span>
-<span className="fo"> = </span>
-<span className="fb">IBR</span>
-<span className="fo"> + </span>
-<span className="fg">Margen</span>
+<span className="fh">inom</span><span className="fo"> = </span>
+<span className="fb">IBR</span><span className="fo"> + </span><span className="fg">Margen</span>
 </div>
 <div className="f-step"><span className="f-step-badge">PASO 2</span> Interes del periodo (360/360)</div>
 <div className="f-main">
-<span className="fh">Interes</span>
-<span className="fo"> = </span>
+<span className="fh">Interes</span><span className="fo"> = </span>
 <span>Capital x <span className="fb">inom</span> x (n/360)</span>
 </div>
 <div className="f-step"><span className="f-step-badge">PASO 3</span> Precio de Suscripcion</div>
 <div className="f-main">
-<span className="fh">P</span>
-<span className="fo"> = </span>
+<span className="fh">P</span><span className="fo"> = </span>
 <span className="fσ">Σ</span>
-<span className="fb"> Fi </span>
-<span className="fo"> / </span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
 <span>(1 + <span className="fh">r</span>)<sup className="fg">ti</sup></span>
 </div>
 <div className="f-legend">
@@ -150,34 +133,27 @@ return (
 </div>
 </div>
 );
-}
-if (s === ‘D’) {
-return (
+if (serie === ‘D’) return (
 <div>
 <div className="formula-title">Formula Oficial - Serie D - UVR + Tasa Fija</div>
 <div className="formula-box">
 <div className="f-step"><span className="f-step-badge">PASO 1</span> Conversion Capital UVR a Pesos</div>
 <div className="f-main">
-<span className="fh">CapCOP</span>
-<span className="fo"> = </span>
+<span className="fh">CapCOP</span><span className="fo"> = </span>
 <span>CapUVR x <span className="fb">UVRt</span></span>
 </div>
 <div className="f-step"><span className="f-step-badge">PASO 2</span> Interes del periodo en Pesos</div>
 <div className="f-main">
-<span className="fh">IntCOP</span>
-<span className="fo"> = </span>
+<span className="fh">IntCOP</span><span className="fo"> = </span>
 <span>CapUVR x <span className="fb">UVRfin</span> x inom</span>
 </div>
 <div className="f-step"><span className="f-step-badge">PASO 3</span> Precio Suscripcion en Pesos</div>
 <div className="f-main">
-<span className="fh">Pcop</span>
-<span className="fo"> = </span>
+<span className="fh">Pcop</span><span className="fo"> = </span>
 <span className="fσ">Σ</span>
-<span className="fb"> Fi </span>
-<span className="fo"> / </span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
 <span>(1+r)<sup>ti</sup></span>
-<span className="fo"> x </span>
-<span className="fb">UVRsuscrip</span>
+<span className="fo"> x </span><span className="fb">UVRsuscrip</span>
 </div>
 <div className="f-legend">
 <span className="sym">UVRt</span><span>UVR certificada por Banco de la Republica en fecha t</span>
@@ -186,33 +162,27 @@ return (
 </div>
 </div>
 );
-}
 return (
 <div>
 <div className="formula-title">Formula Oficial - Serie E - USD Tasa Fija via TRM</div>
 <div className="formula-box">
 <div className="f-step"><span className="f-step-badge">PASO 1</span> Interes en Dolares</div>
 <div className="f-main">
-<span className="fh">IntUSD</span>
-<span className="fo"> = </span>
+<span className="fh">IntUSD</span><span className="fo"> = </span>
 <span>CapUSD x inom</span>
 </div>
 <div className="f-step"><span className="f-step-badge">PASO 2</span> Conversion a Pesos</div>
 <div className="f-main">
-<span className="fh">IntCOP</span>
-<span className="fo"> = </span>
+<span className="fh">IntCOP</span><span className="fo"> = </span>
 <span>CapUSD x inom x <span className="fb">TRMfin</span></span>
 </div>
 <div className="f-step"><span className="f-step-badge">PASO 3</span> Precio Suscripcion</div>
 <div className="f-main">
-<span className="fh">Pcop</span>
-<span className="fo"> = </span>
+<span className="fh">Pcop</span><span className="fo"> = </span>
 <span className="fσ">Σ</span>
-<span className="fb"> Fi </span>
-<span className="fo"> / </span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
 <span>(1+r)<sup>ti</sup></span>
-<span className="fo"> x </span>
-<span className="fb">TRMsuscrip</span>
+<span className="fo"> x </span><span className="fb">TRMsuscrip</span>
 </div>
 <div className="f-legend">
 <span className="sym">TRMfin</span><span>TRM certificada por SFC al ultimo dia del periodo</span>
@@ -286,45 +256,16 @@ Flujos de caja - ultima barra incluye devolucion de capital
 }
 
 export default function App() {
-var stateHook = useState(‘A’);
-var serie = stateHook[0];
-var setSerie = stateHook[1];
-
-var bonosHook = useState(10);
-var numBonos = bonosHook[0];
-var setNumBonos = bonosHook[1];
-
-var indHook = useState(6.5);
-var indVal = indHook[0];
-var setIndVal = indHook[1];
-
-var marHook = useState(2.5);
-var marVal = marHook[0];
-var setMarVal = marHook[1];
-
-var plazoHook = useState(5);
-var plazo = plazoHook[0];
-var setPlazo = plazoHook[1];
-
-var mHook = useState(2);
-var m = mHook[0];
-var setM = mHook[1];
-
-var descHook = useState(10.5);
-var descVal = descHook[0];
-var setDescVal = descHook[1];
-
-var uvrHook = useState(388.45);
-var uvr = uvrHook[0];
-var setUvr = uvrHook[1];
-
-var trmHook = useState(4250);
-var trm = trmHook[0];
-var setTrm = trmHook[1];
-
-var resultsHook = useState(null);
-var results = resultsHook[0];
-var setResults = resultsHook[1];
+var s1 = useState(‘A’); var serie = s1[0]; var setSerie = s1[1];
+var s2 = useState(10); var numBonos = s2[0]; var setNumBonos = s2[1];
+var s3 = useState(6.5); var indVal = s3[0]; var setIndVal = s3[1];
+var s4 = useState(2.5); var marVal = s4[0]; var setMarVal = s4[1];
+var s5 = useState(5); var plazo = s5[0]; var setPlazo = s5[1];
+var s6 = useState(2); var m = s6[0]; var setM = s6[1];
+var s7 = useState(10.5); var descVal = s7[0]; var setDescVal = s7[1];
+var s8 = useState(388.45); var uvr = s8[0]; var setUvr = s8[1];
+var s9 = useState(4250); var trm = s9[0]; var setTrm = s9[1];
+var s10 = useState(null); var results = s10[0]; var setResults = s10[1];
 
 var cfg = SERIES_CONFIG[serie];
 
@@ -370,18 +311,14 @@ var precio = flujos.reduce(function(a, f) { return a + f.vp; }, 0);
 var duracion = flujos.reduce(function(a, f) { return a + f.ti * (f.vp / precio); }, 0);
 
 setResults({
-  teaAnual: teaAnual,
-  flujos: flujos,
-  precio: precio,
-  totalIntereses: totalIntereses,
-  capitalBase: capitalBase * capMult,
-  duracion: duracion,
-  totalPeriodos: totalPeriodos
+  teaAnual: teaAnual, flujos: flujos, precio: precio,
+  totalIntereses: totalIntereses, capitalBase: capitalBase * capMult,
+  duracion: duracion, totalPeriodos: totalPeriodos
 });
 
 setTimeout(function() {
   var el = document.getElementById('results-section');
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 }, 100);
 ```
 
@@ -389,10 +326,21 @@ setTimeout(function() {
 
 function nominalDisplay() {
 var n = numBonos * cfg.nominal;
-if (cfg.moneda === ‘COP’) return ’Valor nominal total: ’ + fmtCOP(n);
-if (cfg.moneda === ‘UVR’) return n.toLocaleString(‘es-CO’) + ’ UVR aprox ’ + fmtCOP(n * uvr);
+if (cfg.moneda === ‘COP’) { return ’Valor nominal total: ’ + fmtCOP(n); }
+if (cfg.moneda === ‘UVR’) { return n.toLocaleString(‘es-CO’) + ’ UVR aprox ’ + fmtCOP(n * uvr); }
 return ’USD ’ + n.toLocaleString(‘es-CO’) + ’ aprox ’ + fmtCOP(n * trm);
 }
+
+var summaryItems = results ? [
+{ l: ‘Capital Total’, v: fmtCOP(results.capitalBase), s: numBonos + ’ bono(s)’ },
+{ l: ‘Intereses Totales’, v: fmtCOP(results.totalIntereses), s: results.totalPeriodos + ’ pagos’ },
+{ l: ‘Retorno Bruto’, v: ((results.totalIntereses / results.capitalBase) * 100).toFixed(2) + ‘%’, s: ‘Sobre el capital’ },
+{ l: ‘Precio Suscripcion Total’, v: fmtCOP(results.precio), s: (results.precio / results.capitalBase * 100).toFixed(2) + ‘% del nominal’, c: ‘highlight’ },
+{ l: ‘Duracion Macaulay’, v: results.duracion.toFixed(3), s: ‘anos’ },
+{ l: ‘Tasa Cupon E.A.’, v: (results.teaAnual * 100).toFixed(4) + ‘%’, s: ‘Conv. ’ + cfg.convencion + ‘/365’ },
+{ l: ‘Tasa Desc. Aplicada’, v: descVal.toFixed(2) + ‘%’, s: ‘Para precio de suscripcion’, c: ‘gold’ },
+{ l: ‘Plazo Total’, v: plazo + ’ anos’, s: results.totalPeriodos + ’ periodos’ },
+] : [];
 
 return (
 <div className="app">
@@ -426,21 +374,12 @@ return (
   <div className="hero">
     <div className="hero-tag">Prospecto de Informacion - Febrero 2026</div>
     <h1>Bonos de <em>Deuda Publica</em><br/>Interna BDPI</h1>
-    <p>Calculadora interactiva de rendimiento segun el Prospecto oficial de Emision y Colocacion.</p>
+    <p>Calculadora interactiva de rendimiento segun el Prospecto oficial.</p>
     <div className="hero-stats">
-      {[
-        { n: '$200MM', l: 'Monto Total COP' },
-        { n: '5', l: 'Series A B C D E' },
-        { n: '1-50', l: 'Anos Plazo Maximo' },
-        { n: 'BVC', l: 'Bolsa de Valores' }
-      ].map(function(s) {
-        return (
-          <div className="stat-item" key={s.l}>
-            <div className="stat-num">{s.n}</div>
-            <div className="stat-label">{s.l}</div>
-          </div>
-        );
-      })}
+      <div className="stat-item"><div className="stat-num">$200MM</div><div className="stat-label">Monto Total COP</div></div>
+      <div className="stat-item"><div className="stat-num">5</div><div className="stat-label">Series A B C D E</div></div>
+      <div className="stat-item"><div className="stat-num">1-50</div><div className="stat-label">Anos Plazo Maximo</div></div>
+      <div className="stat-item"><div className="stat-num">BVC</div><div className="stat-label">Bolsa de Valores</div></div>
     </div>
   </div>
 
@@ -463,12 +402,13 @@ return (
     </div>
 
     <div className="formula-card">
-      {getFormulaContent(serie)}
+      <FormulaCard serie={serie} />
     </div>
 
     <div className="calc-grid">
+
       <div className="card">
-        <div className="card-title"><span>Parametros del Bono</span></div>
+        <div className="card-title">Parametros del Bono</div>
         <div className="card-sub">{cfg.name} - {cfg.moneda}</div>
         <div className="series-info">{cfg.info}</div>
 
@@ -514,14 +454,16 @@ return (
         {cfg.showUVR && (
           <div className="form-group">
             <label>Valor UVR vigente (COP)</label>
-            <input type="number" value={uvr} step={0.01} onChange={function(e) { setUvr(parseFloat(e.target.value) || 388.45); }} />
+            <input type="number" value={uvr} step={0.01}
+              onChange={function(e) { setUvr(parseFloat(e.target.value) || 388.45); }} />
           </div>
         )}
 
         {cfg.showTRM && (
           <div className="form-group">
             <label>TRM vigente (COP/USD)</label>
-            <input type="number" value={trm} step={1} onChange={function(e) { setTrm(parseFloat(e.target.value) || 4250); }} />
+            <input type="number" value={trm} step={1}
+              onChange={function(e) { setTrm(parseFloat(e.target.value) || 4250); }} />
           </div>
         )}
 
@@ -531,12 +473,11 @@ return (
       </div>
 
       <div className="card preview-card">
-        <div className="card-title"><span>Vista Previa</span></div>
+        <div className="card-title">Vista Previa</div>
         <div className="card-sub">Presiona Calcular para ver el detalle</div>
-
         {!results ? (
           <div className="empty-state">
-            <div className="empty-icon">...</div>
+            <div className="empty-icon">&#9889;</div>
             <div>Los resultados apareceran aqui</div>
           </div>
         ) : (
@@ -572,20 +513,15 @@ return (
 
       {results && (
         <div className="results-card" id="results-section">
-          <div className="card-title"><span>Tabla de Flujos de Caja</span></div>
+          <div className="card-title">Tabla de Flujos de Caja</div>
           <div className="card-sub">Proyeccion completa - Prospecto ESSA - Febrero 2026</div>
-
           <div className="flow-table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Periodo</th>
-                  <th>Fecha Pago</th>
-                  <th>Saldo Capital</th>
-                  <th>Interes Periodo</th>
-                  <th>Amortizacion</th>
-                  <th>Flujo Total</th>
-                  <th>VP Flujo</th>
+                  <th>Periodo</th><th>Fecha Pago</th><th>Saldo Capital</th>
+                  <th>Interes Periodo</th><th>Amortizacion</th>
+                  <th>Flujo Total</th><th>VP Flujo</th>
                 </tr>
               </thead>
               <tbody>
@@ -612,18 +548,8 @@ return (
               </tbody>
             </table>
           </div>
-
           <div className="result-grid summary-grid">
-            {[
-              { l: 'Capital Total', v: fmtCOP(results.capitalBase), s: numBonos + ' bono(s)' },
-              { l: 'Intereses Totales', v: fmtCOP(results.totalIntereses), s: results.totalPeriodos + ' pagos' },
-              { l: 'Retorno Bruto', v: ((results.totalIntereses / results.capitalBase) * 100).toFixed(2) + '%', s: 'Sobre el capital' },
-              { l: 'Precio Suscripcion Total', v: fmtCOP(results.precio), s: (results.precio / results.capitalBase * 100).toFixed(2) + '% del nominal', c: 'highlight' },
-              { l: 'Duracion Macaulay', v: results.duracion.toFixed(3), s: 'anos' },
-              { l: 'Tasa Cupon E.A.', v: (results.teaAnual * 100).toFixed(4) + '%', s: 'Conv. ' + cfg.convencion + '/365' },
-              { l: 'Tasa Desc. Aplicada', v: descVal.toFixed(2) + '%', s: 'Para precio de suscripcion', c: 'gold' },
-              { l: 'Plazo Total', v: plazo + ' anos', s: results.totalPeriodos + ' periodos' },
-            ].map(function(item) {
+            {summaryItems.map(function(item) {
               return (
                 <div className={'result-item' + (item.c ? ' ' + item.c : '')} key={item.l}>
                   <div className="r-label">{item.l}</div>
@@ -635,6 +561,7 @@ return (
           </div>
         </div>
       )}
+
     </div>
   </div>
 
