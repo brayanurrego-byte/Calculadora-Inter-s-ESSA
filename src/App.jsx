@@ -1,5 +1,4 @@
 import { useState, useCallback } from ‘react’;
-import ‘./App.css’;
 
 const SERIES_CONFIG = {
 A: {
