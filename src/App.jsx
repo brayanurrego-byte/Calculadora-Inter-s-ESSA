@@ -1,5 +1,4 @@
 import { useState, useCallback } from ‘react’;
-
 const SERIES_CONFIG = {
 A: {
 name: ‘Serie A - IPC + Margen’, color: ‘#4D8FFF’, nominal: 10000000, moneda: ‘COP’, convencion: 365,
