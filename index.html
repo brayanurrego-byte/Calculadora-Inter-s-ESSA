@@ -1,393 +1,579 @@
-<!DOCTYPE html>
+import { useState, useCallback } from ‘react’;
+import ‘./App.css’;
 
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESSA - Calculadora Bonos BDPI</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
-<style>
-:root{--b9:#00205B;--b7:#0046B5;--b4:#4D8FFF;--b1:#E8F0FF;--b0:#F4F7FF;--gold:#F5A623;--w:#fff;--g5:#6B7594;--g7:#374169;--ok:#00B274;--r:20px;--rs:12px}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:var(--b0);color:var(--g7);min-height:100vh;overflow-x:hidden}
-.bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(135deg,#00205B,#0046B5,#003087);overflow:hidden}
-.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:48px 48px}
-.bg-orb{position:absolute;border-radius:50%;filter:blur(60px)}
-.orb1{width:400px;height:400px;background:rgba(0,92,230,.4);top:-100px;right:-100px}
-.orb2{width:300px;height:300px;background:rgba(77,143,255,.25);bottom:-50px;left:-80px}
-.wrap{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
-header{position:sticky;top:0;z-index:100;padding:0 40px;height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(12px);background:rgba(0,32,91,.6)}
-.logo-area{display:flex;align-items:center;gap:14px}
-.logo-mark{width:48px;height:48px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3)}
-.logo-svg{width:40px;height:40px}
-.logo-text strong{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;letter-spacing:1px;color:#fff;display:block;line-height:1}
-.logo-text span{font-size:10px;color:#B3CFFF;letter-spacing:2px;text-transform:uppercase}
-.hbadge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:7px 16px;border-radius:40px;font-size:12px;font-weight:500}
-.hero{padding:70px 40px 50px;text-align:center;color:#fff}
-.hero-tag{display:inline-block;background:rgba(245,166,35,.2);border:1px solid rgba(245,166,35,.5);color:var(--gold);padding:5px 18px;border-radius:40px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
-.hero h1{font-family:'Playfair Display',serif;font-size:clamp(32px,6vw,64px);font-weight:900;line-height:1.05;margin-bottom:16px}
-.hero h1 em{font-style:normal;color:var(--gold)}
-.hero p{font-size:16px;color:#B3CFFF;max-width:560px;margin:0 auto 36px;line-height:1.6}
-.hero-stats{display:flex;justify-content:center;gap:36px;flex-wrap:wrap}
-.stat-num{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#fff}
-.stat-label{font-size:11px;color:#B3CFFF;text-transform:uppercase;letter-spacing:1.5px;margin-top:3px}
-.main{flex:1;padding:0 40px 80px;max-width:1300px;margin:0 auto;width:100%}
-.slbl{color:#fff;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;opacity:.7;display:flex;align-items:center;gap:10px}
-.slbl::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.15)}
-.series-selector{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px}
-.sbtn{padding:10px 22px;border-radius:50px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;transition:all .2s;display:flex;align-items:center;gap:8px}
-.sbtn:hover{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.15)}
-.sbtn.active{background:#fff;color:var(--b9);border-color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.3)}
-.sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.formula-card{background:linear-gradient(135deg,#00205B,#001844);border-radius:var(--r);padding:26px 30px;color:#fff;margin-bottom:22px;position:relative;overflow:hidden}
-.formula-card::after{content:'S';position:absolute;right:24px;bottom:-16px;font-size:140px;font-family:'Playfair Display',serif;color:rgba(255,255,255,.04);pointer-events:none;line-height:1}
-.ftitle{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#B3CFFF;margin-bottom:16px;font-weight:600;display:flex;align-items:center;gap:8px}
-.ftitle::before{content:'';width:20px;height:2px;background:var(--gold)}
-.fbox{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:20px}
-.fstep{font-size:12px;color:#B3CFFF;margin-bottom:6px}
-.fbadge{background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;margin-right:7px;letter-spacing:1px}
-.fmain{font-family:'DM Mono',monospace;font-size:18px;color:#fff;text-align:center;margin:10px 0 18px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px}
-.fh{color:var(--gold)}.fb{color:var(--b4)}.fg{color:#4FFFB0}.fo{color:rgba(255,255,255,.4);font-size:16px}.fS{font-size:26px;color:rgba(255,255,255,.6)}
-.fleg{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12px;color:#B3CFFF;margin-top:14px}
-.sym{color:var(--gold);font-weight:600;font-family:'DM Mono',monospace}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-@media(max-width:900px){.grid2{grid-template-columns:1fr}}
-.card{background:#fff;border-radius:var(--r);padding:28px;box-shadow:0 8px 40px rgba(0,32,91,.14);position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--b7),var(--b4))}
-.ctitle{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--b9);margin-bottom:6px}
-.csub{font-size:12px;color:var(--g5);margin-bottom:20px}
-.sinfo{background:var(--b1);border:1px solid #B3CFFF;border-radius:var(--rs);padding:12px 16px;margin-bottom:20px;font-size:12px;color:#003087;line-height:1.6}
-.fg-wrap{margin-bottom:18px}
-.fg-wrap label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--g5);margin-bottom:7px}
-.fg-wrap input[type=number],.fg-wrap select{width:100%;padding:12px 14px;border:2px solid #F0F2F7;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--g7);background:#F0F2F7;outline:none;appearance:none;transition:all .2s}
-.fg-wrap input[type=number]:focus,.fg-wrap select:focus{border-color:var(--b7);background:#fff;box-shadow:0 0 0 4px rgba(0,70,181,.08)}
-.hint{font-size:11px;color:var(--g5);margin-top:5px}
-.swrap{display:flex;align-items:center;gap:14px;margin-bottom:8px}
-input[type=range]{flex:1;height:6px;-webkit-appearance:none;appearance:none;background:#F0F2F7;border-radius:99px;cursor:pointer;border:none;padding:0;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--b7);border-radius:50%;box-shadow:0 2px 8px rgba(0,70,181,.4);cursor:pointer;transition:transform .15s}
-input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
-.sval{min-width:58px;text-align:center;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--b7);background:var(--b1);padding:5px 8px;border-radius:8px}
-.btn-calc{width:100%;padding:16px;margin-top:8px;background:linear-gradient(135deg,var(--b7),var(--b9));color:#fff;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 6px 24px rgba(0,70,181,.35)}
-.btn-calc:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,70,181,.5)}
-.preview-card{display:flex;flex-direction:column}
-.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;text-align:center;color:var(--g5)}
-.empty-icon{font-size:60px;margin-bottom:14px;opacity:.15;filter:grayscale(1)}
-.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.ri{background:var(--b0);border-radius:var(--rs);padding:16px;text-align:center;border:1px solid var(--b1);transition:all .3s}
-.ri:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,32,91,.1)}
-.rl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--g5);margin-bottom:6px;font-weight:600}
-.rv{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--b9);line-height:1}
-.rv.big{font-size:26px;color:var(--b7)}
-.rs2{font-size:10px;color:var(--g5);margin-top:5px;font-family:'DM Mono',monospace}
-.ri.hl{background:linear-gradient(135deg,var(--b7),var(--b9))}.ri.hl .rl,.ri.hl .rs2{color:#B3CFFF}.ri.hl .rv{color:#fff}
-.ri.gd{background:linear-gradient(135deg,#F5A623,#E8860A)}.ri.gd .rl,.ri.gd .rs2{color:rgba(0,0,0,.55)}.ri.gd .rv{color:#fff}
-.mchart{width:100%;height:90px;margin-top:18px}
-.mchart svg{width:100%;height:100%;display:block}
-.res-card{background:#fff;border-radius:var(--r);padding:28px;box-shadow:0 8px 40px rgba(0,32,91,.14);grid-column:1/-1;position:relative;overflow:hidden}
-.res-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold),var(--b4))}
-.twrap{margin-top:20px;overflow-x:auto;border-radius:var(--rs);border:1px solid var(--b1)}
-table{width:100%;border-collapse:collapse;font-size:13px}
-thead{background:linear-gradient(135deg,#00205B,#0046B5);color:#fff}
-thead th{padding:12px 16px;text-align:left;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap}
-tbody tr{border-bottom:1px solid var(--b0);transition:background .15s}
-tbody tr:hover{background:var(--b0)}
-.tot-row{background:var(--b0)!important;font-weight:700}
-tbody td{padding:11px 16px;color:var(--g7);font-family:'DM Mono',monospace;font-size:12px}
-.tdp{font-family:'DM Sans',sans-serif!important;font-weight:600;color:#003087!important}
-.tdup{color:var(--ok)}
-.tdt{font-family:'Playfair Display',serif!important;font-size:14px!important;color:var(--b9)!important}
-.sgrid{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
-footer{background:rgba(0,32,91,.92);border-top:1px solid rgba(255,255,255,.1);padding:24px 40px;color:#B3CFFF;font-size:11px;text-align:center;line-height:1.8;position:relative;z-index:1}
-footer strong{color:#fff}
-@media(max-width:768px){header,footer{padding:0 20px}.hero,.main{padding-left:20px;padding-right:20px}.hero h1{font-size:32px}.sbtn{font-size:12px;padding:9px 16px}.formula-card,.card{padding:18px}}
-</style>
-</head>
-<body>
-<div class="bg-canvas"><div class="bg-grid"></div><div class="bg-orb orb1"></div><div class="bg-orb orb2"></div></div>
-<div class="wrap">
-<header>
-  <div class="logo-area">
-    <div class="logo-mark">
-      <svg class="logo-svg" viewBox="0 0 44 44" fill="none">
-        <rect width="44" height="44" rx="10" fill="#00205B"/>
-        <path d="M26 6L14 22H22L18 38L30 20H22L26 6Z" fill="#F5A623"/>
-        <circle cx="12" cy="22" r="2.5" fill="white" opacity="0.6"/>
-        <circle cx="32" cy="22" r="2.5" fill="white" opacity="0.6"/>
-        <line x1="12" y1="22" x2="16" y2="22" stroke="white" stroke-width="1.5" opacity="0.4"/>
-        <line x1="28" y1="22" x2="32" y2="22" stroke="white" stroke-width="1.5" opacity="0.4"/>
-      </svg>
-    </div>
-    <div class="logo-text"><strong>ESSA</strong><span>Electrificadora de Santander</span></div>
-  </div>
-  <div class="hbadge">Mercado de Valores - Colombia</div>
-</header>
-<div class="hero">
-  <div class="hero-tag">Prospecto de Informacion - Febrero 2026</div>
-  <h1>Bonos de <em>Deuda Publica</em><br>Interna BDPI</h1>
-  <p>Calculadora interactiva de rendimiento segun el Prospecto oficial de Emision y Colocacion.</p>
-  <div class="hero-stats">
-    <div><div class="stat-num">$200MM</div><div class="stat-label">Monto Total COP</div></div>
-    <div><div class="stat-num">5</div><div class="stat-label">Series A B C D E</div></div>
-    <div><div class="stat-num">1-50</div><div class="stat-label">Anos Plazo Maximo</div></div>
-    <div><div class="stat-num">BVC</div><div class="stat-label">Bolsa de Valores</div></div>
-  </div>
-</div>
-<div class="main">
-  <div class="slbl">Selecciona la Serie del Bono</div>
-  <div class="series-selector" id="series-btns"></div>
-  <div class="formula-card" id="formula-area"></div>
-  <div class="grid2">
-    <div class="card">
-      <div class="ctitle">Parametros del Bono</div>
-      <div class="csub" id="csub"></div>
-      <div class="sinfo" id="sinfo"></div>
-      <div class="fg-wrap">
-        <label>Numero de Bonos a Suscribir</label>
-        <input type="number" id="numBonos" value="10" min="1" max="10000">
-        <div class="hint" id="nominalHint"></div>
-      </div>
-      <div class="fg-wrap" id="grpInd">
-        <label id="lblInd">IPC Anual (%) E.A.</label>
-        <div class="swrap"><input type="range" id="rInd" min="0" max="25" step="0.1" value="6.5"><span class="sval" id="vInd">6.50%</span></div>
-        <input type="number" id="nInd" value="6.5" step="0.1" min="0" max="30">
-      </div>
-      <div class="fg-wrap" id="grpMar">
-        <label id="lblMar">Margen (%) E.A.</label>
-        <div class="swrap"><input type="range" id="rMar" min="0" max="10" step="0.05" value="2.5"><span class="sval" id="vMar">2.50%</span></div>
-        <input type="number" id="nMar" value="2.5" step="0.05" min="0" max="15">
-      </div>
-      <div class="fg-wrap">
-        <label>Plazo de Redencion (Anos)</label>
-        <div class="swrap"><input type="range" id="rPlazo" min="1" max="50" step="1" value="5"><span class="sval" id="vPlazo">5 anos</span></div>
-        <input type="number" id="nPlazo" value="5" step="1" min="1" max="50">
-      </div>
-      <div class="fg-wrap">
-        <label>Periodicidad de Pago</label>
-        <select id="selPer">
-          <option value="12">Mes Vencido (12/ano)</option>
-          <option value="4">Trimestre Vencido (4/ano)</option>
-          <option value="2" selected>Semestre Vencido (2/ano)</option>
-          <option value="1">Ano Vencido (1/ano)</option>
-        </select>
-      </div>
-      <div class="fg-wrap" id="grpIBR" style="display:none">
-        <label>Plazo IBR</label>
-        <select><option>1 mes NMV</option><option selected>3 meses NTV</option><option>6 meses NSV</option><option>12 meses NAV</option></select>
-      </div>
-      <div class="fg-wrap" id="grpUVR" style="display:none">
-        <label>Valor UVR vigente (COP)</label>
-        <input type="number" id="nUVR" value="388.45" step="0.01">
-      </div>
-      <div class="fg-wrap" id="grpTRM" style="display:none">
-        <label>TRM vigente (COP/USD)</label>
-        <input type="number" id="nTRM" value="4250" step="1">
-      </div>
-      <div class="fg-wrap">
-        <label>Tasa de Descuento / Corte (r%) E.A.</label>
-        <div class="swrap"><input type="range" id="rDesc" min="0" max="30" step="0.1" value="10.5"><span class="sval" id="vDesc">10.50%</span></div>
-        <input type="number" id="nDesc" value="10.5" step="0.1" min="0" max="40">
-      </div>
-      <button class="btn-calc" onclick="calcular()">Calcular Rendimiento</button>
-    </div>
-    <div class="card preview-card">
-      <div class="ctitle">Vista Previa</div>
-      <div class="csub">Presiona Calcular para ver el detalle</div>
-      <div id="previewEmpty" class="empty"><div class="empty-icon">&#9889;</div><div>Los resultados apareceran aqui</div></div>
-      <div id="previewResults" style="display:none"></div>
-    </div>
-    <div class="res-card" id="resCard" style="display:none">
-      <div class="ctitle">Tabla de Flujos de Caja</div>
-      <div class="csub">Proyeccion completa - Prospecto ESSA - Febrero 2026</div>
-      <div class="twrap"><table id="flowTable"><thead><tr><th>Periodo</th><th>Fecha Pago</th><th>Saldo Capital</th><th>Interes Periodo</th><th>Amortizacion</th><th>Flujo Total</th><th>VP Flujo</th></tr></thead><tbody id="flowBody"></tbody></table></div>
-      <div class="sgrid" id="sgrid"></div>
-    </div>
-  </div>
-</div>
-<footer><strong>Electrificadora de Santander S.A. E.S.P. ESSA</strong><br>Prospecto de Informacion - Bonos de Deuda Publica Interna - Febrero 2026<br>Uso academico e ilustrativo - BVC - Administrado por Deceval S.A.</footer>
-</div>
-<script>
-var SERIES = {
-  A:{name:'Serie A - IPC + Margen',color:'#4D8FFF',nominal:10000000,moneda:'COP',conv:365,info:'Bonos en Pesos. TEA = (1+IPC) x (1+Margen) - 1. Convencion 365/365.',lblInd:'IPC Anual (%) E.A.',lblMar:'Margen (%) E.A.',showMar:true,showIBR:false,showUVR:false,showTRM:false},
-  B:{name:'Serie B - Tasa Fija',color:'#F5A623',nominal:10000000,moneda:'COP',conv:365,info:'Bonos en Pesos con tasa fija como Tasa Cupon. Expresada en E.A.',lblInd:'Tasa Cupon Fija (%) E.A.',lblMar:null,showMar:false,showIBR:false,showUVR:false,showTRM:false},
-  C:{name:'Serie C - IBR + Margen',color:'#00B274',nominal:10000000,moneda:'COP',conv:360,info:'Bonos en Pesos. Tasa N = IBR + Margen. Convencion 360/360.',lblInd:'IBR Nominal (%)',lblMar:'Margen Nominal (%)',showMar:true,showIBR:true,showUVR:false,showTRM:false},
-  D:{name:'Serie D - UVR + Tasa Fija',color:'#E86FAB',nominal:100000,moneda:'UVR',conv:365,info:'Bonos en UVR. Capital e intereses convertidos a Pesos por valor UVR.',lblInd:'Tasa Cupon Fija (%) E.A.',lblMar:null,showMar:false,showIBR:false,showUVR:true,showTRM:false},
-  E:{name:'Serie E - USD + Tasa Fija',color:'#FF7043',nominal:5000,moneda:'USD',conv:365,info:'Bonos en Dolares. Intereses en USD pagados en Pesos via TRM.',lblInd:'Tasa Cupon Fija (%) E.A.',lblMar:null,showMar:false,showIBR:false,showUVR:false,showTRM:true}
+const SERIES_CONFIG = {
+A: {
+name: ‘Serie A - IPC + Margen’, color: ‘#4D8FFF’, nominal: 10000000, moneda: ‘COP’, convencion: 365,
+info: ‘Bonos en Pesos. TEA = (1+IPC) x (1+Margen) - 1. Convencion 365/365.’,
+labelInd: ‘IPC Anual (%) E.A.’, labelMar: ‘Margen Adicional (%) E.A.’,
+ttInd: ‘Inflacion anual certificada por el DANE.’,
+ttMar: ‘Spread en terminos efectivos anuales.’,
+showIBRPlazo: false, showUVR: false, showTRM: false,
+},
+B: {
+name: ‘Serie B - Tasa Fija’, color: ‘#F5A623’, nominal: 10000000, moneda: ‘COP’, convencion: 365,
+info: ‘Bonos en Pesos con tasa fija definida como Tasa Cupon en la Oferta Publica.’,
+labelInd: ‘Tasa Cupon Fija (%) E.A.’, labelMar: null,
+ttInd: ‘Tasa fija en terminos efectivos anuales.’,
+showIBRPlazo: false, showUVR: false, showTRM: false,
+},
+C: {
+name: ‘Serie C - IBR + Margen’, color: ‘#00B274’, nominal: 10000000, moneda: ‘COP’, convencion: 360,
+info: ‘Bonos en Pesos. Tasa N = IBR + Margen. Convencion 360/360.’,
+labelInd: ‘IBR Nominal (%)’, labelMar: ‘Margen Adicional (%) Nominal’,
+ttInd: ‘IBR publicado por el Banco de la Republica.’,
+ttMar: ‘Spread nominal adicional sobre el IBR.’,
+showIBRPlazo: true, showUVR: false, showTRM: false,
+},
+D: {
+name: ‘Serie D - UVR + Tasa Fija’, color: ‘#E86FAB’, nominal: 100000, moneda: ‘UVR’, convencion: 365,
+info: ‘Bonos en UVR. Capital e intereses se convierten a Pesos por el valor de la UVR.’,
+labelInd: ‘Tasa Cupon Fija (%) E.A.’, labelMar: null,
+ttInd: ‘Tasa fija E.A. sobre capital en UVR convertido a Pesos.’,
+showIBRPlazo: false, showUVR: true, showTRM: false,
+},
+E: {
+name: ‘Serie E - USD + Tasa Fija’, color: ‘#FF7043’, nominal: 5000, moneda: ‘USD’, convencion: 365,
+info: ‘Bonos en Dolares. Intereses calculados en USD y pagados en Pesos via TRM.’,
+labelInd: ‘Tasa Cupon Fija (%) E.A.’, labelMar: null,
+ttInd: ‘Tasa fija E.A. en dolares, pagada en Pesos usando la TRM.’,
+showIBRPlazo: false, showUVR: false, showTRM: true,
+},
 };
 
-var FORMULAS = {
-A:’<div class="ftitle">Formula Oficial - Serie A - IPC + Margen</div><div class="fbox"><div class="fstep"><span class="fbadge">PASO 1</span>Tasa Efectiva Anual compuesta</div><div class="fmain"><span class="fh">TEA</span><span class="fo">=</span><span>(1+<span class="fb">IPC</span>) x (1+<span class="fg">M</span>) - 1</span></div><div class="fstep"><span class="fbadge">PASO 2</span>Precio de Suscripcion (Valor Presente)</div><div class="fmain"><span class="fh">P</span><span class="fo">=</span><span class="fS">S</span><span class="fb">Fi</span><span class="fo">/</span><span>(1+<span class="fh">r</span>)<sup class="fg">ti</sup></span></div><div class="fleg"><span class="sym">TEA</span><span>Tasa Efectiva Anual combinada</span><span class="sym">IPC</span><span>Inflacion DANE E.A.</span><span class="sym">M</span><span>Margen adicional E.A.</span><span class="sym">P</span><span>Precio Suscripcion COP</span><span class="sym">Fi</span><span>Flujo de interes o amortizacion en periodo i</span><span class="sym">r</span><span>Tasa de Corte E.A.</span><span class="sym">ti</span><span>Tiempo en anos hasta pago i - conv 365/365</span></div></div>’,
-B:’<div class="ftitle">Formula Oficial - Serie B - Tasa Fija</div><div class="fbox"><div class="fstep"><span class="fbadge">PASO 1</span>Conversion E.A. a Nominal periodico</div><div class="fmain"><span class="fh">inom</span><span class="fo">=</span><span>m x [(1+<span class="fb">TEA</span>)<sup>1/m</sup> - 1]</span></div><div class="fstep"><span class="fbadge">PASO 2</span>Precio de Suscripcion</div><div class="fmain"><span class="fh">P</span><span class="fo">=</span><span class="fS">S</span><span class="fb">Fi</span><span class="fo">/</span><span>(1+<span class="fh">r</span>)<sup class="fg">ti</sup></span></div><div class="fleg"><span class="sym">TEA</span><span>Tasa Cupon fija E.A.</span><span class="sym">m</span><span>Periodos por ano (12,4,2 o 1)</span><span class="sym">inom</span><span>Tasa nominal periodica</span><span class="sym">r</span><span>Tasa de Corte E.A.</span></div></div>’,
-C:’<div class="ftitle">Formula Oficial - Serie C - IBR + Margen (360/360)</div><div class="fbox"><div class="fstep"><span class="fbadge">PASO 1</span>Tasa Nominal Total</div><div class="fmain"><span class="fh">inom</span><span class="fo">=</span><span class="fb">IBR</span><span class="fo">+</span><span class="fg">Margen</span></div><div class="fstep"><span class="fbadge">PASO 2</span>Interes del periodo (360/360)</div><div class="fmain"><span class="fh">Int</span><span class="fo">=</span><span>Capital x <span class="fb">inom</span> x (n/360)</span></div><div class="fstep"><span class="fbadge">PASO 3</span>Precio de Suscripcion</div><div class="fmain"><span class="fh">P</span><span class="fo">=</span><span class="fS">S</span><span class="fb">Fi</span><span class="fo">/</span><span>(1+<span class="fh">r</span>)<sup class="fg">ti</sup></span></div><div class="fleg"><span class="sym">IBR</span><span>IBR nominal al plazo (base 360 dias)</span><span class="sym">n</span><span>Dias del periodo</span><span class="sym">r</span><span>Tasa de descuento E.A.</span></div></div>’,
-D:’<div class="ftitle">Formula Oficial - Serie D - UVR + Tasa Fija</div><div class="fbox"><div class="fstep"><span class="fbadge">PASO 1</span>Conversion Capital UVR a Pesos</div><div class="fmain"><span class="fh">CapCOP</span><span class="fo">=</span><span>CapUVR x <span class="fb">UVRt</span></span></div><div class="fstep"><span class="fbadge">PASO 2</span>Interes del periodo en Pesos</div><div class="fmain"><span class="fh">IntCOP</span><span class="fo">=</span><span>CapUVR x <span class="fb">UVRfin</span> x inom</span></div><div class="fstep"><span class="fbadge">PASO 3</span>Precio Suscripcion</div><div class="fmain"><span class="fh">P</span><span class="fo">=</span><span class="fS">S</span><span class="fb">Fi</span><span class="fo">/</span><span>(1+r)<sup>ti</sup></span><span class="fo">x</span><span class="fb">UVRs</span></div><div class="fleg"><span class="sym">UVRt</span><span>UVR certificada Banco de la Republica en t</span><span class="sym">UVRfin</span><span>UVR al ultimo dia del periodo</span><span class="sym">UVRs</span><span>UVR en Fecha de Suscripcion</span></div></div>’,
-E:’<div class="ftitle">Formula Oficial - Serie E - USD Tasa Fija via TRM</div><div class="fbox"><div class="fstep"><span class="fbadge">PASO 1</span>Interes en Dolares</div><div class="fmain"><span class="fh">IntUSD</span><span class="fo">=</span><span>CapUSD x inom</span></div><div class="fstep"><span class="fbadge">PASO 2</span>Conversion a Pesos</div><div class="fmain"><span class="fh">IntCOP</span><span class="fo">=</span><span>CapUSD x inom x <span class="fb">TRMfin</span></span></div><div class="fstep"><span class="fbadge">PASO 3</span>Precio Suscripcion</div><div class="fmain"><span class="fh">P</span><span class="fo">=</span><span class="fS">S</span><span class="fb">Fi</span><span class="fo">/</span><span>(1+r)<sup>ti</sup></span><span class="fo">x</span><span class="fb">TRMs</span></div><div class="fleg"><span class="sym">TRMfin</span><span>TRM certificada SFC al ultimo dia del periodo</span><span class="sym">TRMs</span><span>TRM en Fecha de Suscripcion</span></div></div>’
-};
+const DOT_COLORS = { A: ‘#4D8FFF’, B: ‘#F5A623’, C: ‘#00B274’, D: ‘#E86FAB’, E: ‘#FF7043’ };
 
-var curSerie = ‘A’;
+function fmtCOP(v) {
+return ’$ ’ + Math.round(v).toLocaleString(‘es-CO’);
+}
 
-function fmtCOP(v){return ’$ ‘+Math.round(v).toLocaleString(‘es-CO’);}
-function pLabel(i,m){var l={12:‘Mes’,4:‘Trim’,2:‘Sem’,1:‘Ano’};return (l[m]||‘Per’)+’ ’+i;}
+function getPeriodoLabel(i, m) {
+var labels = { 12: ‘Mes’, 4: ‘Trim’, 2: ‘Sem’, 1: ‘Ano’ };
+return (labels[m] || ‘Per’) + ’ ’ + i;
+}
 
-// Build series buttons
-var sb = document.getElementById(‘series-btns’);
-Object.keys(SERIES).forEach(function(s){
-var b = document.createElement(‘button’);
-b.className=‘sbtn’+(s===‘A’?’ active’:’’);
-b.id=‘btn-’+s;
-b.innerHTML=’<span class="sdot" style="background:'+SERIES[s].color+'"></span>’+SERIES[s].name;
-b.onclick=function(){setSerie(s);};
-sb.appendChild(b);
+function FormulaCard({ serie }) {
+if (serie === ‘A’) return (
+<div>
+<div className="formula-title">Formula Oficial - Serie A - IPC + Margen</div>
+<div className="formula-box">
+<div className="f-step"><span className="f-step-badge">PASO 1</span> Tasa Efectiva Anual compuesta</div>
+<div className="f-main">
+<span className="fh">TEA</span><span className="fo"> = </span>
+<span>(1 + <span className="fb">IPC</span>) x (1 + <span className="fg">M</span>) - 1</span>
+</div>
+<div className="f-step"><span className="f-step-badge">PASO 2</span> Precio de Suscripcion (VP)</div>
+<div className="f-main">
+<span className="fh">P</span><span className="fo"> = </span>
+<span className="fσ">Σ</span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
+<span>(1 + <span className="fh">r</span>)<sup className="fg">ti</sup></span>
+</div>
+<div className="f-legend">
+<span className="sym">TEA</span><span>Tasa Efectiva Anual combinada</span>
+<span className="sym">IPC</span><span>Inflacion certificada DANE - E.A.</span>
+<span className="sym">M</span><span>Margen adicional - E.A.</span>
+<span className="sym">P</span><span>Precio de Suscripcion en COP</span>
+<span className="sym">Fi</span><span>Flujo de interes o amortizacion en periodo i</span>
+<span className="sym">r</span><span>Tasa de Corte E.A.</span>
+<span className="sym">ti</span><span>Tiempo en anos hasta pago i - conv. 365/365</span>
+</div>
+</div>
+</div>
+);
+if (serie === ‘B’) return (
+<div>
+<div className="formula-title">Formula Oficial - Serie B - Tasa Fija</div>
+<div className="formula-box">
+<div className="f-step"><span className="f-step-badge">PASO 1</span> Conversion E.A. a Tasa Nominal</div>
+<div className="f-main">
+<span className="fh">inom</span><span className="fo"> = </span>
+<span>m x [(1 + <span className="fb">TEA</span>)<sup>1/m</sup> - 1]</span>
+</div>
+<div className="f-step"><span className="f-step-badge">PASO 2</span> Precio de Suscripcion</div>
+<div className="f-main">
+<span className="fh">P</span><span className="fo"> = </span>
+<span className="fσ">Σ</span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
+<span>(1 + <span className="fh">r</span>)<sup className="fg">ti</sup></span>
+</div>
+<div className="f-legend">
+<span className="sym">TEA</span><span>Tasa Cupon fija - E.A.</span>
+<span className="sym">m</span><span>Periodos por ano (12, 4, 2 o 1)</span>
+<span className="sym">inom</span><span>Tasa nominal equivalente al periodo</span>
+<span className="sym">r</span><span>Tasa de Corte E.A.</span>
+</div>
+</div>
+</div>
+);
+if (serie === ‘C’) return (
+<div>
+<div className="formula-title">Formula Oficial - Serie C - IBR + Margen</div>
+<div className="formula-box">
+<div className="f-step"><span className="f-step-badge">PASO 1</span> Tasa Nominal Total</div>
+<div className="f-main">
+<span className="fh">inom</span><span className="fo"> = </span>
+<span className="fb">IBR</span><span className="fo"> + </span><span className="fg">Margen</span>
+</div>
+<div className="f-step"><span className="f-step-badge">PASO 2</span> Interes del periodo (360/360)</div>
+<div className="f-main">
+<span className="fh">Interes</span><span className="fo"> = </span>
+<span>Capital x <span className="fb">inom</span> x (n/360)</span>
+</div>
+<div className="f-step"><span className="f-step-badge">PASO 3</span> Precio de Suscripcion</div>
+<div className="f-main">
+<span className="fh">P</span><span className="fo"> = </span>
+<span className="fσ">Σ</span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
+<span>(1 + <span className="fh">r</span>)<sup className="fg">ti</sup></span>
+</div>
+<div className="f-legend">
+<span className="sym">IBR</span><span>IBR nominal al plazo (base 360 dias)</span>
+<span className="sym">n</span><span>Dias del periodo de intereses</span>
+<span className="sym">r</span><span>Tasa de descuento E.A.</span>
+</div>
+</div>
+</div>
+);
+if (serie === ‘D’) return (
+<div>
+<div className="formula-title">Formula Oficial - Serie D - UVR + Tasa Fija</div>
+<div className="formula-box">
+<div className="f-step"><span className="f-step-badge">PASO 1</span> Conversion Capital UVR a Pesos</div>
+<div className="f-main">
+<span className="fh">CapCOP</span><span className="fo"> = </span>
+<span>CapUVR x <span className="fb">UVRt</span></span>
+</div>
+<div className="f-step"><span className="f-step-badge">PASO 2</span> Interes del periodo en Pesos</div>
+<div className="f-main">
+<span className="fh">IntCOP</span><span className="fo"> = </span>
+<span>CapUVR x <span className="fb">UVRfin</span> x inom</span>
+</div>
+<div className="f-step"><span className="f-step-badge">PASO 3</span> Precio Suscripcion en Pesos</div>
+<div className="f-main">
+<span className="fh">Pcop</span><span className="fo"> = </span>
+<span className="fσ">Σ</span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
+<span>(1+r)<sup>ti</sup></span>
+<span className="fo"> x </span><span className="fb">UVRsuscrip</span>
+</div>
+<div className="f-legend">
+<span className="sym">UVRt</span><span>UVR certificada por Banco de la Republica en fecha t</span>
+<span className="sym">UVRfin</span><span>UVR vigente al ultimo dia del periodo</span>
+</div>
+</div>
+</div>
+);
+return (
+<div>
+<div className="formula-title">Formula Oficial - Serie E - USD Tasa Fija via TRM</div>
+<div className="formula-box">
+<div className="f-step"><span className="f-step-badge">PASO 1</span> Interes en Dolares</div>
+<div className="f-main">
+<span className="fh">IntUSD</span><span className="fo"> = </span>
+<span>CapUSD x inom</span>
+</div>
+<div className="f-step"><span className="f-step-badge">PASO 2</span> Conversion a Pesos</div>
+<div className="f-main">
+<span className="fh">IntCOP</span><span className="fo"> = </span>
+<span>CapUSD x inom x <span className="fb">TRMfin</span></span>
+</div>
+<div className="f-step"><span className="f-step-badge">PASO 3</span> Precio Suscripcion</div>
+<div className="f-main">
+<span className="fh">Pcop</span><span className="fo"> = </span>
+<span className="fσ">Σ</span>
+<span className="fb"> Fi </span><span className="fo"> / </span>
+<span>(1+r)<sup>ti</sup></span>
+<span className="fo"> x </span><span className="fb">TRMsuscrip</span>
+</div>
+<div className="f-legend">
+<span className="sym">TRMfin</span><span>TRM certificada por SFC al ultimo dia del periodo</span>
+<span className="sym">TRMsuscrip</span><span>TRM vigente en la Fecha de Suscripcion</span>
+</div>
+</div>
+</div>
+);
+}
+
+function SliderInput({ label, tooltip, min, max, step, value, onChange, isSuffix }) {
+var display = isSuffix ? (value + ’ anos’) : (parseFloat(value).toFixed(2) + ‘%’);
+return (
+<div className="form-group">
+<label>
+{label}
+{tooltip && (
+<span className="tooltip-wrap">
+<span className="tooltip-icon">?</span>
+<span className="tooltip-text">{tooltip}</span>
+</span>
+)}
+</label>
+<div className="slider-wrap">
+<input
+type=“range” min={min} max={max} step={step} value={value}
+onChange={function(e) { onChange(parseFloat(e.target.value)); }}
+/>
+<span className="slider-val">{display}</span>
+</div>
+<input
+type=“number” value={value} step={step} min={min} max={max}
+onChange={function(e) { onChange(parseFloat(e.target.value) || 0); }}
+/>
+</div>
+);
+}
+
+function MiniChart({ flujos, serie }) {
+var col = DOT_COLORS[serie] || ‘#4D8FFF’;
+var maxVal = Math.max.apply(null, flujos.map(function(f) { return f.flujoTotal; }));
+var W = 700, H = 100, PAD = 10;
+var bw = Math.max(2, (W - PAD * 2) / flujos.length - 2);
+return (
+<svg viewBox={’0 0 ’ + W + ’ ’ + H} preserveAspectRatio=“none” className=“mini-chart-svg”>
+<defs>
+<linearGradient id="mcBg" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stopColor={col} stopOpacity="0.1" />
+<stop offset="100%" stopColor={col} stopOpacity="0.02" />
+</linearGradient>
+</defs>
+<rect x={0} y={0} width={W} height={H} rx="8" fill="url(#mcBg)" />
+{flujos.map(function(f, idx) {
+var bh = Math.max(2, (f.flujoTotal / maxVal) * (H - PAD - 14));
+var x = PAD + idx * ((W - PAD * 2) / flujos.length) + 1;
+var y = H - PAD - bh - 12;
+return (
+<rect
+key={idx}
+x={x.toFixed(1)} y={y.toFixed(1)}
+width={bw.toFixed(1)} height={bh.toFixed(1)}
+rx="3" fill={col} opacity={f.amort > 0 ? 1 : 0.55}
+/>
+);
+})}
+<text x={W / 2} y={H - 2} textAnchor=“middle” fontSize=“9” fill=”#888” fontFamily=“DM Sans, sans-serif”>
+Flujos de caja - ultima barra incluye devolucion de capital
+</text>
+</svg>
+);
+}
+
+export default function App() {
+var s1 = useState(‘A’); var serie = s1[0]; var setSerie = s1[1];
+var s2 = useState(10); var numBonos = s2[0]; var setNumBonos = s2[1];
+var s3 = useState(6.5); var indVal = s3[0]; var setIndVal = s3[1];
+var s4 = useState(2.5); var marVal = s4[0]; var setMarVal = s4[1];
+var s5 = useState(5); var plazo = s5[0]; var setPlazo = s5[1];
+var s6 = useState(2); var m = s6[0]; var setM = s6[1];
+var s7 = useState(10.5); var descVal = s7[0]; var setDescVal = s7[1];
+var s8 = useState(388.45); var uvr = s8[0]; var setUvr = s8[1];
+var s9 = useState(4250); var trm = s9[0]; var setTrm = s9[1];
+var s10 = useState(null); var results = s10[0]; var setResults = s10[1];
+
+var cfg = SERIES_CONFIG[serie];
+
+var calcular = useCallback(function() {
+var ind = indVal / 100;
+var mar = marVal / 100;
+var r = descVal / 100;
+var capMult = serie === ‘D’ ? uvr : serie === ‘E’ ? trm : 1;
+var teaAnual, iPeriodica;
+
+```
+if (serie === 'A') {
+  teaAnual = (1 + ind) * (1 + mar) - 1;
+  iPeriodica = Math.pow(1 + teaAnual, 1 / m) - 1;
+} else if (serie === 'C') {
+  var iN = ind + mar;
+  teaAnual = Math.pow(1 + iN / m, m) - 1;
+  iPeriodica = iN / m;
+} else {
+  teaAnual = ind;
+  iPeriodica = Math.pow(1 + teaAnual, 1 / m) - 1;
+}
+
+var totalPeriodos = plazo * m;
+var capitalBase = cfg.nominal * numBonos;
+var flujos = [];
+var totalIntereses = 0;
+
+for (var i = 1; i <= totalPeriodos; i++) {
+  var intPeriodo = capitalBase * iPeriodica * capMult;
+  var amort = i === totalPeriodos ? capitalBase * capMult : 0;
+  var flujoTotal = intPeriodo + amort;
+  var ti = i / m;
+  var vp = flujoTotal / Math.pow(1 + r, ti);
+  totalIntereses += intPeriodo;
+  var fecha = new Date();
+  fecha.setMonth(fecha.getMonth() + Math.round((12 / m) * i));
+  var fechaStr = fecha.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
+  flujos.push({ i: i, fechaStr: fechaStr, capital: capitalBase * capMult, intPeriodo: intPeriodo, amort: amort, flujoTotal: flujoTotal, vp: vp, ti: ti });
+}
+
+var precio = flujos.reduce(function(a, f) { return a + f.vp; }, 0);
+var duracion = flujos.reduce(function(a, f) { return a + f.ti * (f.vp / precio); }, 0);
+
+setResults({
+  teaAnual: teaAnual, flujos: flujos, precio: precio,
+  totalIntereses: totalIntereses, capitalBase: capitalBase * capMult,
+  duracion: duracion, totalPeriodos: totalPeriodos
 });
 
-function setSerie(s){
-curSerie=s;
-document.querySelectorAll(’.sbtn’).forEach(function(b){b.classList.remove(‘active’);});
-document.getElementById(‘btn-’+s).classList.add(‘active’);
-var cfg=SERIES[s];
-document.getElementById(‘csub’).textContent=cfg.name+’ - ‘+cfg.moneda;
-document.getElementById(‘sinfo’).textContent=cfg.info;
-document.getElementById(‘formula-area’).innerHTML=FORMULAS[s];
-document.getElementById(‘lblInd’).textContent=cfg.lblInd;
-document.getElementById(‘grpMar’).style.display=cfg.showMar?’’:‘none’;
-if(cfg.lblMar)document.getElementById(‘lblMar’).textContent=cfg.lblMar;
-document.getElementById(‘grpIBR’).style.display=cfg.showIBR?’’:‘none’;
-document.getElementById(‘grpUVR’).style.display=cfg.showUVR?’’:‘none’;
-document.getElementById(‘grpTRM’).style.display=cfg.showTRM?’’:‘none’;
-document.getElementById(‘previewEmpty’).style.display=‘flex’;
-document.getElementById(‘previewResults’).style.display=‘none’;
-document.getElementById(‘resCard’).style.display=‘none’;
-updateHint();
+setTimeout(function() {
+  var el = document.getElementById('results-section');
+  if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}, 100);
+```
+
+}, [serie, numBonos, indVal, marVal, plazo, m, descVal, uvr, trm, cfg]);
+
+function nominalDisplay() {
+var n = numBonos * cfg.nominal;
+if (cfg.moneda === ‘COP’) { return ’Valor nominal total: ’ + fmtCOP(n); }
+if (cfg.moneda === ‘UVR’) { return n.toLocaleString(‘es-CO’) + ’ UVR aprox ’ + fmtCOP(n * uvr); }
+return ’USD ’ + n.toLocaleString(‘es-CO’) + ’ aprox ’ + fmtCOP(n * trm);
 }
 
-function updateHint(){
-var cfg=SERIES[curSerie];
-var n=parseInt(document.getElementById(‘numBonos’).value)||1;
-var total=n*cfg.nominal;
-var txt;
-if(cfg.moneda===‘COP’){txt=’Valor nominal total: ‘+fmtCOP(total);}
-else if(cfg.moneda===‘UVR’){var u=parseFloat(document.getElementById(‘nUVR’).value)||388.45;txt=total.toLocaleString(‘es-CO’)+’ UVR aprox ’+fmtCOP(total*u);}
-else{var t=parseFloat(document.getElementById(‘nTRM’).value)||4250;txt=’USD ‘+total.toLocaleString(‘es-CO’)+’ aprox ’+fmtCOP(total*t);}
-document.getElementById(‘nominalHint’).textContent=txt;
+var summaryItems = results ? [
+{ l: ‘Capital Total’, v: fmtCOP(results.capitalBase), s: numBonos + ’ bono(s)’ },
+{ l: ‘Intereses Totales’, v: fmtCOP(results.totalIntereses), s: results.totalPeriodos + ’ pagos’ },
+{ l: ‘Retorno Bruto’, v: ((results.totalIntereses / results.capitalBase) * 100).toFixed(2) + ‘%’, s: ‘Sobre el capital’ },
+{ l: ‘Precio Suscripcion Total’, v: fmtCOP(results.precio), s: (results.precio / results.capitalBase * 100).toFixed(2) + ‘% del nominal’, c: ‘highlight’ },
+{ l: ‘Duracion Macaulay’, v: results.duracion.toFixed(3), s: ‘anos’ },
+{ l: ‘Tasa Cupon E.A.’, v: (results.teaAnual * 100).toFixed(4) + ‘%’, s: ‘Conv. ’ + cfg.convencion + ‘/365’ },
+{ l: ‘Tasa Desc. Aplicada’, v: descVal.toFixed(2) + ‘%’, s: ‘Para precio de suscripcion’, c: ‘gold’ },
+{ l: ‘Plazo Total’, v: plazo + ’ anos’, s: results.totalPeriodos + ’ periodos’ },
+] : [];
+
+return (
+<div className="app">
+<div className="bg-canvas">
+<div className="bg-grid" />
+<div className="bg-orb orb1" />
+<div className="bg-orb orb2" />
+</div>
+
+```
+  <header>
+    <div className="logo-area">
+      <div className="logo-mark">
+        <svg viewBox="0 0 44 44" fill="none" className="logo-svg">
+          <rect width="44" height="44" rx="10" fill="#00205B"/>
+          <path d="M26 6L14 22H22L18 38L30 20H22L26 6Z" fill="#F5A623"/>
+          <circle cx="12" cy="22" r="2.5" fill="white" opacity="0.6"/>
+          <circle cx="32" cy="22" r="2.5" fill="white" opacity="0.6"/>
+          <line x1="12" y1="22" x2="16" y2="22" stroke="white" strokeWidth="1.5" opacity="0.4"/>
+          <line x1="28" y1="22" x2="32" y2="22" stroke="white" strokeWidth="1.5" opacity="0.4"/>
+        </svg>
+      </div>
+      <div className="logo-text">
+        <strong>ESSA</strong>
+        <span>Electrificadora de Santander</span>
+      </div>
+    </div>
+    <div className="header-badge">Mercado de Valores - Colombia</div>
+  </header>
+
+  <div className="hero">
+    <div className="hero-tag">Prospecto de Informacion - Febrero 2026</div>
+    <h1>Bonos de <em>Deuda Publica</em><br/>Interna BDPI</h1>
+    <p>Calculadora interactiva de rendimiento segun el Prospecto oficial.</p>
+    <div className="hero-stats">
+      <div className="stat-item"><div className="stat-num">$200MM</div><div className="stat-label">Monto Total COP</div></div>
+      <div className="stat-item"><div className="stat-num">5</div><div className="stat-label">Series A B C D E</div></div>
+      <div className="stat-item"><div className="stat-num">1-50</div><div className="stat-label">Anos Plazo Maximo</div></div>
+      <div className="stat-item"><div className="stat-num">BVC</div><div className="stat-label">Bolsa de Valores</div></div>
+    </div>
+  </div>
+
+  <div className="main-content">
+    <div className="section-label">Selecciona la Serie del Bono</div>
+
+    <div className="series-selector">
+      {Object.keys(SERIES_CONFIG).map(function(s) {
+        return (
+          <button
+            key={s}
+            className={'series-btn' + (serie === s ? ' active' : '')}
+            onClick={function() { setSerie(s); setResults(null); }}
+          >
+            <span className="series-dot" style={{ background: DOT_COLORS[s] }} />
+            {SERIES_CONFIG[s].name}
+          </button>
+        );
+      })}
+    </div>
+
+    <div className="formula-card">
+      <FormulaCard serie={serie} />
+    </div>
+
+    <div className="calc-grid">
+
+      <div className="card">
+        <div className="card-title">Parametros del Bono</div>
+        <div className="card-sub">{cfg.name} - {cfg.moneda}</div>
+        <div className="series-info">{cfg.info}</div>
+
+        <div className="form-group">
+          <label>Numero de Bonos a Suscribir</label>
+          <input
+            type="number" value={numBonos} min="1" max="10000"
+            onChange={function(e) { setNumBonos(parseInt(e.target.value) || 1); }}
+          />
+          <div className="input-hint">{nominalDisplay()}</div>
+        </div>
+
+        <SliderInput label={cfg.labelInd} tooltip={cfg.ttInd} min={0} max={25} step={0.1} value={indVal} onChange={setIndVal} />
+
+        {cfg.labelMar && (
+          <SliderInput label={cfg.labelMar} tooltip={cfg.ttMar} min={0} max={10} step={0.05} value={marVal} onChange={setMarVal} />
+        )}
+
+        <SliderInput label="Plazo de Redencion (Anos)" tooltip="Entre 1 y 50 anos segun el Prospecto." min={1} max={50} step={1} value={plazo} onChange={setPlazo} isSuffix={true} />
+
+        <div className="form-group">
+          <label>Periodicidad de Pago de Intereses</label>
+          <select value={m} onChange={function(e) { setM(parseInt(e.target.value)); }}>
+            <option value={12}>Mes Vencido (12/ano)</option>
+            <option value={4}>Trimestre Vencido (4/ano)</option>
+            <option value={2}>Semestre Vencido (2/ano)</option>
+            <option value={1}>Ano Vencido (1/ano)</option>
+          </select>
+        </div>
+
+        {cfg.showIBRPlazo && (
+          <div className="form-group">
+            <label>Plazo IBR</label>
+            <select>
+              <option>1 mes NMV</option>
+              <option>3 meses NTV</option>
+              <option>6 meses NSV</option>
+              <option>12 meses NAV</option>
+            </select>
+          </div>
+        )}
+
+        {cfg.showUVR && (
+          <div className="form-group">
+            <label>Valor UVR vigente (COP)</label>
+            <input type="number" value={uvr} step={0.01}
+              onChange={function(e) { setUvr(parseFloat(e.target.value) || 388.45); }} />
+          </div>
+        )}
+
+        {cfg.showTRM && (
+          <div className="form-group">
+            <label>TRM vigente (COP/USD)</label>
+            <input type="number" value={trm} step={1}
+              onChange={function(e) { setTrm(parseFloat(e.target.value) || 4250); }} />
+          </div>
+        )}
+
+        <SliderInput label="Tasa de Descuento / Corte (r%) E.A." tooltip="Tasa de mercado para valorar el precio de suscripcion." min={0} max={30} step={0.1} value={descVal} onChange={setDescVal} />
+
+        <button className="btn-calc" onClick={calcular}>Calcular Rendimiento</button>
+      </div>
+
+      <div className="card preview-card">
+        <div className="card-title">Vista Previa</div>
+        <div className="card-sub">Presiona Calcular para ver el detalle</div>
+        {!results ? (
+          <div className="empty-state">
+            <div className="empty-icon">&#9889;</div>
+            <div>Los resultados apareceran aqui</div>
+          </div>
+        ) : (
+          <div className="quick-results">
+            <div className="result-grid">
+              <div className="result-item highlight">
+                <div className="r-label">Tasa Cupon E.A.</div>
+                <div className="r-value big">{(results.teaAnual * 100).toFixed(4)}%</div>
+                <div className="r-sub">Efectiva Anual</div>
+              </div>
+              <div className="result-item gold">
+                <div className="r-label">Precio Suscripcion</div>
+                <div className="r-value">{fmtCOP(results.precio / numBonos)}</div>
+                <div className="r-sub">{(results.precio / results.capitalBase * 100).toFixed(2)}% del nominal</div>
+              </div>
+              <div className="result-item">
+                <div className="r-label">Cupon Periodico</div>
+                <div className="r-value">{fmtCOP(results.flujos[0].intPeriodo)}</div>
+                <div className="r-sub">Interes por periodo</div>
+              </div>
+              <div className="result-item">
+                <div className="r-label">Total Intereses</div>
+                <div className="r-value">{fmtCOP(results.totalIntereses)}</div>
+                <div className="r-sub">Suma todos los periodos</div>
+              </div>
+            </div>
+            <div className="mini-chart-wrap">
+              <MiniChart flujos={results.flujos} serie={serie} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {results && (
+        <div className="results-card" id="results-section">
+          <div className="card-title">Tabla de Flujos de Caja</div>
+          <div className="card-sub">Proyeccion completa - Prospecto ESSA - Febrero 2026</div>
+          <div className="flow-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Periodo</th><th>Fecha Pago</th><th>Saldo Capital</th>
+                  <th>Interes Periodo</th><th>Amortizacion</th>
+                  <th>Flujo Total</th><th>VP Flujo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.flujos.map(function(f) {
+                  return (
+                    <tr key={f.i}>
+                      <td className="td-period">{getPeriodoLabel(f.i, m)}</td>
+                      <td>{f.fechaStr}</td>
+                      <td>{fmtCOP(f.capital)}</td>
+                      <td className="td-up">{fmtCOP(f.intPeriodo)}</td>
+                      <td>{f.amort > 0 ? fmtCOP(f.amort) : '-'}</td>
+                      <td>{fmtCOP(f.flujoTotal)}</td>
+                      <td>{fmtCOP(f.vp)}</td>
+                    </tr>
+                  );
+                })}
+                <tr className="totals-row">
+                  <td colSpan={3} className="td-total">TOTALES</td>
+                  <td className="td-total td-up">{fmtCOP(results.totalIntereses)}</td>
+                  <td className="td-total">{fmtCOP(results.capitalBase)}</td>
+                  <td className="td-total">{fmtCOP(results.totalIntereses + results.capitalBase)}</td>
+                  <td className="td-total">{fmtCOP(results.precio)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="result-grid summary-grid">
+            {summaryItems.map(function(item) {
+              return (
+                <div className={'result-item' + (item.c ? ' ' + item.c : '')} key={item.l}>
+                  <div className="r-label">{item.l}</div>
+                  <div className={'r-value' + (item.c === 'highlight' ? ' big' : '')}>{item.v}</div>
+                  <div className="r-sub">{item.s}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+    </div>
+  </div>
+
+  <footer>
+    <strong>Electrificadora de Santander S.A. E.S.P. ESSA</strong><br/>
+    Prospecto de Informacion - Bonos de Deuda Publica Interna - Febrero 2026<br/>
+    Uso academico e ilustrativo - BVC - Administrado por Deceval S.A.
+  </footer>
+</div>
+```
+
+);
 }
-
-// Slider sync
-function syncR(key){
-var r=document.getElementById(‘r’+key);
-var n=document.getElementById(‘n’+key);
-var v=document.getElementById(‘v’+key);
-var val=parseFloat(r.value);
-n.value=val;
-v.textContent=key===‘Plazo’?val+’ anos’:val.toFixed(2)+’%’;
-updateHint();
-}
-function syncN(key){
-var r=document.getElementById(‘r’+key);
-var n=document.getElementById(‘n’+key);
-var v=document.getElementById(‘v’+key);
-var val=parseFloat(n.value)||0;
-r.value=val;
-v.textContent=key===‘Plazo’?val+’ anos’:val.toFixed(2)+’%’;
-}
-[‘Ind’,‘Mar’,‘Plazo’,‘Desc’].forEach(function(k){
-document.getElementById(‘r’+k).oninput=function(){syncR(k);};
-document.getElementById(‘n’+k).oninput=function(){syncN(k);};
-});
-document.getElementById(‘numBonos’).oninput=updateHint;
-
-function calcular(){
-var cfg=SERIES[curSerie];
-var numBonos=parseInt(document.getElementById(‘numBonos’).value)||1;
-var ind=parseFloat(document.getElementById(‘nInd’).value)/100;
-var mar=parseFloat(document.getElementById(‘nMar’).value)/100;
-var plazo=parseInt(document.getElementById(‘nPlazo’).value)||5;
-var m=parseInt(document.getElementById(‘selPer’).value);
-var r=parseFloat(document.getElementById(‘nDesc’).value)/100;
-var uvr=parseFloat(document.getElementById(‘nUVR’).value)||388.45;
-var trm=parseFloat(document.getElementById(‘nTRM’).value)||4250;
-var capMult=curSerie===‘D’?uvr:curSerie===‘E’?trm:1;
-
-var teaAnual,iPer;
-if(curSerie===‘A’){teaAnual=(1+ind)*(1+mar)-1;iPer=Math.pow(1+teaAnual,1/m)-1;}
-else if(curSerie===‘C’){var iN=ind+mar;teaAnual=Math.pow(1+iN/m,m)-1;iPer=iN/m;}
-else{teaAnual=ind;iPer=Math.pow(1+teaAnual,1/m)-1;}
-
-var totalP=plazo*m;
-var capBase=cfg.nominal*numBonos;
-var flujos=[],totalInt=0;
-
-for(var i=1;i<=totalP;i++){
-var intP=capBase*iPer*capMult;
-var amort=(i===totalP)?capBase*capMult:0;
-var ft=intP+amort;
-var ti=i/m;
-var vp=ft/Math.pow(1+r,ti);
-totalInt+=intP;
-var fecha=new Date();fecha.setMonth(fecha.getMonth()+Math.round((12/m)*i));
-var fStr=fecha.toLocaleDateString(‘es-CO’,{year:‘numeric’,month:‘short’,day:‘numeric’});
-flujos.push({i:i,fStr:fStr,cap:capBase*capMult,intP:intP,amort:amort,ft:ft,vp:vp,ti:ti});
-}
-var precio=flujos.reduce(function(a,f){return a+f.vp;},0);
-var duracion=flujos.reduce(function(a,f){return a+f.ti*(f.vp/precio);},0);
-
-// Preview
-var col=SERIES[curSerie].color;
-var maxFT=Math.max.apply(null,flujos.map(function(f){return f.ft;}));
-var W=700,H=80,PAD=8;
-var bw=Math.max(2,(W-PAD*2)/flujos.length-2);
-var bars=flujos.map(function(f,idx){
-var bh=Math.max(2,(f.ft/maxFT)*(H-PAD-10));
-var x=PAD+idx*((W-PAD*2)/flujos.length)+1;
-var y=H-PAD-bh-8;
-return ‘<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="3" fill="'+col+'" opacity="'+(f.amort>0?1:0.55)+'"/>’;
-}).join(’’);
-
-document.getElementById(‘previewEmpty’).style.display=‘none’;
-document.getElementById(‘previewResults’).style.display=‘block’;
-document.getElementById(‘previewResults’).innerHTML=
-‘<div class="rgrid">’+
-‘<div class="ri hl"><div class="rl">Tasa Cupon E.A.</div><div class="rv big">’+(teaAnual*100).toFixed(4)+’%</div><div class="rs2">Efectiva Anual</div></div>’+
-‘<div class="ri gd"><div class="rl">Precio Suscripcion</div><div class="rv">’+fmtCOP(precio/numBonos)+’</div><div class="rs2">’+(precio/(capBase*capMult)*100).toFixed(2)+’% del nominal</div></div>’+
-‘<div class="ri"><div class="rl">Cupon Periodico</div><div class="rv">’+fmtCOP(flujos[0].intP)+’</div><div class="rs2">Interes por periodo</div></div>’+
-‘<div class="ri"><div class="rl">Total Intereses</div><div class="rv">’+fmtCOP(totalInt)+’</div><div class="rs2">Suma todos los periodos</div></div>’+
-‘</div>’+
-‘<div class="mchart"><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="width:100%;height:100%;display:block">’+bars+’</svg></div>’;
-
-// Table
-var tbody=document.getElementById(‘flowBody’);
-tbody.innerHTML=’’;
-var totalVP=0;
-flujos.forEach(function(f){
-totalVP+=f.vp;
-var tr=document.createElement(‘tr’);
-tr.innerHTML=’<td class="tdp">’+pLabel(f.i,m)+’</td><td>’+f.fStr+’</td><td>’+fmtCOP(f.cap)+’</td><td class="tdup">’+fmtCOP(f.intP)+’</td><td>’+(f.amort>0?fmtCOP(f.amort):’-’)+’</td><td>’+fmtCOP(f.ft)+’</td><td>’+fmtCOP(f.vp)+’</td>’;
-tbody.appendChild(tr);
-});
-var tot=document.createElement(‘tr’);
-tot.className=‘tot-row’;
-tot.innerHTML=’<td colspan="3" class="tdt">TOTALES</td><td class="tdt tdup">’+fmtCOP(totalInt)+’</td><td class="tdt">’+fmtCOP(capBase*capMult)+’</td><td class="tdt">’+fmtCOP(totalInt+capBase*capMult)+’</td><td class="tdt">’+fmtCOP(precio)+’</td>’;
-tbody.appendChild(tot);
-
-// Summary
-var items=[
-{l:‘Capital Total’,v:fmtCOP(capBase*capMult),s:numBonos+’ bono(s)’},
-{l:‘Intereses Totales’,v:fmtCOP(totalInt),s:totalP+’ pagos’},
-{l:‘Retorno Bruto’,v:((totalInt/(capBase*capMult))*100).toFixed(2)+’%’,s:‘Sobre el capital’},
-{l:‘Precio Suscripcion’,v:fmtCOP(precio),s:(precio/(capBase*capMult)*100).toFixed(2)+’% nominal’,c:‘hl’},
-{l:‘Duracion Macaulay’,v:duracion.toFixed(3),s:‘anos’},
-{l:‘Tasa Cupon E.A.’,v:(teaAnual*100).toFixed(4)+’%’,s:‘Conv. ‘+cfg.conv+’/365’},
-{l:‘Tasa Descuento’,v:parseFloat(document.getElementById(‘nDesc’).value).toFixed(2)+’%’,s:‘Para precio suscripcion’,c:‘gd’},
-{l:‘Plazo Total’,v:plazo+’ anos’,s:totalP+’ periodos’}
-];
-document.getElementById(‘sgrid’).innerHTML=items.map(function(x){
-return ‘<div class="ri'+(x.c?' '+x.c:'')+'"><div class="rl">’+x.l+’</div><div class="rv'+(x.c==='hl'?' big':'')+'">’+x.v+’</div><div class="rs2">’+x.s+’</div></div>’;
-}).join(’’);
-
-document.getElementById(‘resCard’).style.display=‘block’;
-document.getElementById(‘resCard’).scrollIntoView({behavior:‘smooth’,block:‘start’});
-}
-
-setSerie(‘A’);
-</script>
-
-</body>
-</html>
